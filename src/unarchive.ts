@@ -2,7 +2,7 @@ import * as core from "@actions/core"
 import * as fs from "fs"
 import * as path from "path"
 import * as tar from "tar"
-import * as StreamZip from "node-stream-zip"
+import * as unzipper from "unzipper"
 
 export const extract = async (
   filePath: string,
@@ -32,9 +32,10 @@ export const extract = async (
     })
   }
   if (isZip) {
-    const zip = new StreamZip.async({file: filePath})
-    await zip.extract(null, destDir)
-    await zip.close()
+    await fs
+      .createReadStream(filePath)
+      .pipe(unzipper.Extract({path: destDir}))
+      .promise()
   }
   core.info(`Extracted ${filename} to ${destDir}`)
 }
